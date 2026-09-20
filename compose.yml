@@ -1,0 +1,42 @@
+services:
+  fan-guard:
+    image: quietbox-fan-guard:${REVISION:?set exact git revision}
+    build:
+      context: .
+      args:
+        REVISION: ${REVISION}
+    container_name: quietbox-fan-guard
+    restart: unless-stopped
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 32
+    mem_limit: 64m
+    cpus: 0.25
+    stop_grace_period: 10s
+    volumes:
+      - type: bind
+        source: ./config/${QUIETBOX:?set q4 or q5}.json
+        target: /config/config.json
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /sys/devices/platform/nct6775.656
+        target: /hardware/fan
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /sys/devices/pci0000:00/0000:00:18.3
+        target: /hardware/cpu
+        read_only: true
+        bind:
+          create_host_path: false
+    tmpfs:
+      - /run/fan-guard:rw,noexec,nosuid,size=1m,mode=0700
+    logging:
+      driver: json-file
+      options:
+        max-size: 2m
+        max-file: '2'
