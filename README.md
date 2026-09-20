@@ -100,6 +100,18 @@ writes; the narrow channel allowlist is enforced in code, not separate mounts.
 python3 -m unittest -v
 ```
 
+Opt-in Docker acceptance against an already built image (temporary fake sensor
+files only, about 30 seconds):
+
+```sh
+FAN_GUARD_DOCKER_IMAGE=quietbox-fan-guard:$REVISION python3 -m unittest -v tests.test_docker
+```
+
+This suspends a disposable container's main process, proves its separate
+healthcheck forces maximum duty, resumes it, and proves clean shutdown also
+forces maximum. The test removes only its own uniquely named container and
+temporary fake-sensor directory.
+
 Tests use fake sysfs only, including exact dwell boundaries, resets, cooldown
 extension, restarts, missing/bad sensors, pump exclusion, write failures,
 watchdog overrides, and real-process signal cleanup. No test heats a real CPU

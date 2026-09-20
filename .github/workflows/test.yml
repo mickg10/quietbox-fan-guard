@@ -11,3 +11,5 @@ jobs:
         with:
           python-version: '3.13'
       - run: python -m unittest -v
+      - run: docker build --build-arg REVISION="$GITHUB_SHA" -t fan-guard-ci .
+      - run: FAN_GUARD_DOCKER_IMAGE=fan-guard-ci python -m unittest -v tests.test_docker
