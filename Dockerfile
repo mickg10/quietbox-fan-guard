@@ -5,6 +5,7 @@ LABEL org.opencontainers.image.source="https://github.com/mickg10/quietbox-fan-g
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app
 COPY fan_guard.py ./
+COPY config ./config
 HEALTHCHECK --interval=5s --timeout=4s --start-period=10s --retries=1 \
   CMD ["python", "/app/fan_guard.py", "watchdog"]
 STOPSIGNAL SIGTERM

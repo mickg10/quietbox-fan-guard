@@ -1,0 +1,39 @@
+name: publish image
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: write
+concurrency:
+  group: publish-image
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m unittest -v
+      - name: Build tested image
+        run: docker build --build-arg REVISION="$GITHUB_SHA" -t fan-guard-release .
+      - name: Docker safety acceptance
+        run: FAN_GUARD_DOCKER_IMAGE=fan-guard-release python -m unittest -v tests.test_docker
+      - name: Publish version and latest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          image=ghcr.io/mickg10/quietbox-fan-guard
+          docker tag fan-guard-release "$image:sha-$GITHUB_SHA"
+          docker push "$image:sha-$GITHUB_SHA"
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            version="${GITHUB_REF_NAME#v}"
+            docker tag fan-guard-release "$image:$version"
+            docker push "$image:$version"
+          fi
+          docker tag fan-guard-release "$image:latest"
+          docker push "$image:latest"

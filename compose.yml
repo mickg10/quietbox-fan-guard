@@ -6,7 +6,7 @@ services:
       args:
         REVISION: ${REVISION}
     container_name: quietbox-fan-guard
-    restart: unless-stopped
+    restart: always
     network_mode: none
     read_only: true
     cap_drop: [ALL]

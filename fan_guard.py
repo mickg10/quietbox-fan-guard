@@ -174,6 +174,18 @@ def failsafe(hw, config):
         return False
 
 
+def config_path(explicit=None, profile=None, config_dir=None):
+    """Explicit file, packaged named profile, or legacy Compose config mount."""
+    if explicit is not None:
+        return Path(explicit)
+    if profile is not None:
+        if profile not in ("q4", "q5"):
+            raise ValueError("QUIETBOX_PROFILE must be q4 or q5")
+        base = Path(config_dir) if config_dir else Path(__file__).resolve().parent / "config"
+        return base / f"{profile}.json"
+    return Path("/config/config.json")
+
+
 def watchdog(hw, config, runtime, now=None):
     """Separate Docker healthcheck process: stale loop => force max, latch trip."""
     now = time.monotonic() if now is None else now
@@ -240,13 +252,13 @@ def run(hw, config, runtime):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=("run", "watchdog", "status", "max"))
-    parser.add_argument("--config", default="/config/config.json")
+    parser.add_argument("--config", help="override the packaged profile or Compose config")
     parser.add_argument("--fan-root", default="/hardware/fan")
     parser.add_argument("--cpu-root", default="/hardware/cpu")
     parser.add_argument("--runtime", default="/run/fan-guard")
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    config = Config.load(args.config)
+    config = Config.load(config_path(args.config, os.environ.get("QUIETBOX_PROFILE")))
     hw, runtime = Hardware(args.fan_root, args.cpu_root), Path(args.runtime)
     if args.command == "run":
         run(hw, config, runtime)

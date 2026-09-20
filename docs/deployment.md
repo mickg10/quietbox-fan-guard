@@ -1,10 +1,11 @@
 # Deployment and acceptance — 2026-09-20
 
-Private repository: https://github.com/mickg10/quietbox-fan-guard
+Historical initial deployment (private at the time; subsequently made public):
+https://github.com/mickg10/quietbox-fan-guard
 
 ## Installed runtime
 
-- Both hosts: `/home/mickg10/src/quietbox-fan-guard`.
+- Both hosts: a `quietbox-fan-guard` checkout under the operator's source directory.
 - Container: `quietbox-fan-guard`.
 - Runtime image tag / OCI revision:
   `7ea503dd8dc85665b9e84f74c2d20f9c14c67f80`.

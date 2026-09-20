@@ -7,7 +7,7 @@ import time
 import unittest
 from unittest.mock import patch
 
-from fan_guard import Config, Policy, Hardware, atomic_json, watchdog, failsafe
+from fan_guard import Config, Policy, Hardware, atomic_json, watchdog, failsafe, config_path
 
 
 class PolicyTests(unittest.TestCase):
@@ -86,6 +86,23 @@ class PolicyTests(unittest.TestCase):
                    {"quiet_pwm4": True}):
             with self.assertRaises(ValueError):
                 Config(**({"quiet_pwm4": 163, "quiet_pwm5": 162} | kw))
+
+
+class ProfileTests(unittest.TestCase):
+    def test_packaged_profiles(self):
+        self.assertEqual(Config.load(config_path(profile="q4")).quiet_pwm4, 163)
+        self.assertEqual(Config.load(config_path(profile="q5")).quiet_pwm5, 160)
+
+    def test_explicit_config_takes_precedence(self):
+        self.assertEqual(config_path("/example.json", "q4"), Path("/example.json"))
+
+    def test_legacy_compose_mount(self):
+        self.assertEqual(config_path(), Path("/config/config.json"))
+
+    def test_unknown_profile_and_path_traversal_rejected(self):
+        for value in ("", "other", "../q4", "/q4"):
+            with self.assertRaises(ValueError):
+                config_path(profile=value)
 
 
 class HardwareTests(unittest.TestCase):
